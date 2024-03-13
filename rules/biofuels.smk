@@ -32,8 +32,8 @@ rule biofuels:
     message: "Determine biofuels potential on {wildcards.resolution} resolution for scenario {wildcards.scenario}."
     input:
         units = rules.units_without_shape.output[0],
-        land_cover = rules.potentials.output.land_cover,
-        population = rules.potentials.output.population,
+        land_cover = "build/data/{resolution}/land-cover.csv",
+        population = "build/data/{resolution}/population.csv",
         national_potentials = rules.preprocess_biofuel_potentials_and_cost.output.potentials,
         costs = rules.preprocess_biofuel_potentials_and_cost.output.costs
     params:

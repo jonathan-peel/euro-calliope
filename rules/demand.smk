@@ -29,7 +29,7 @@ rule electricity_load:
     message: "Generate electricity load time series for every location on {wildcards.resolution} resolution."
     input:
         units = rules.units.output[0],
-        demand_per_unit = rules.potentials.output.demand,
+        demand_per_unit = "build/data/{resolution}/demand.csv",
         national_load = rules.electricity_load_national.output[0]
     params:
         scaling_factor = config["scaling-factors"]["power"]

@@ -27,7 +27,8 @@ include: "./rules/sync.smk"
 min_version("7.8")
 localrules: all, clean
 wildcard_constraints:
-        resolution = "continental|national|regional"
+    resolution = "continental|national|regional",
+    tech_group = "supply|supply_plus|demand|conversion|conversion_plus|transmission" # constrained according to Calliope documentations to prevent ambiguous rules
 
 ruleorder: area_to_capacity_limits > hydro_capacities > biofuels > nuclear_regional_capacity > dummy_tech_locations_template
 ruleorder: bio_techs_and_locations_template > techs_and_locations_template

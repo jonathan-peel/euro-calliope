@@ -16,9 +16,13 @@ rule download_potentials:
     shell: "curl -sLo {output} '{params.url}'"
 
 
-rule potentials_non_continental:
+rule data_files_non_continental:
     # TODO: constrain using wildcard for just regional or national resolutions
-    message: "Unzip potentials for regional or national resolutions."
+    message: 
+        """
+        Unzip potentials, coast, demand, population, and land cover for regional 
+        or national resolutions.
+        """
     input: rules.download_potentials.output[0]
     shadow: "minimal"
     wildcard_constraints:
@@ -36,11 +40,19 @@ rule potentials_non_continental:
 
 
 # TODO: add a new rule for just continental where the national data is extracted, filtered for the countries of interest, then aggregated into a continental amount
-rule potentials_continental:
-    message: "Unzip potentials for continental resolutions." # change
+rule data_files_continental:
+    message:
+        """
+        For the continental resolution, files (potentials, coast, demand, population, 
+        and land cover) are constructed by summing the national files for the countries
+        considered.
+        """
     input: "build/data/national/{filename}.csv"
     output: "build/data/continental/{filename}.csv"
-    conda: "../envs/default.yaml" # what does this do?
+    wildcard_constraints: 
+        # implemented because of ambiguity against rule 'dummy_tech_locations_template' when filename='demand/electricity'
+        filename = "areas|shared-coast|demand|population|land-cover"
+    conda: "../envs/default.yaml"
     script: "../scripts/wind-and-solar/aggregate_continental_potentials.py"
 
 
@@ -56,7 +68,9 @@ rule area_to_capacity_limits:
     message: "Use technology densities to convert wind & solar {wildcards.resolution} available area to capacity limits."
     input:
         units = rules.units_without_shape.output[0],
-        land_eligibility_km2 = rules.potentials.output.land_eligibility_km2,
+        land_eligibility_km2 = "build/data/{{resolution}}/{scenario}/areas.csv".format(
+            scenario=config["parameters"]["wind-and-solar-potential-scenario"]
+        ),
     params:
         max_power_densities = config["parameters"]["maximum-installable-power-density"],
         roof_shares = config["parameters"]["roof-share"],
@@ -95,7 +109,7 @@ rule capacity_factors_offshore:
              "{wildcards.resolution} resolution for wind-offshore."
     input:
         eez = rules.eez.output[0],
-        shared_coast = rules.potentials.output.shared_coast,
+        shared_coast = "build/data/{resolution}/shared-coast.csv",
         timeseries = ancient("data/automatic/capacityfactors/wind-offshore-timeseries.nc")
     params:
         cf_threshold = config["capacity-factors"]["min"],
