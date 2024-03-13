@@ -16,10 +16,13 @@ rule download_potentials:
     shell: "curl -sLo {output} '{params.url}'"
 
 
-rule potentials:
-    message: "Unzip potentials."
+rule potentials_non_continental:
+    # TODO: constrain using wildcard for just regional or national resolutions
+    message: "Unzip potentials for regional or national resolutions."
     input: rules.download_potentials.output[0]
     shadow: "minimal"
+    wildcard_constraints:
+        resolution="regional|national"
     output:
         land_eligibility_km2 = "build/data/{{resolution}}/{scenario}/areas.csv".format(
             scenario=config["parameters"]["wind-and-solar-potential-scenario"]
@@ -30,6 +33,15 @@ rule potentials:
         land_cover = "build/data/{resolution}/land-cover.csv"
     conda: "../envs/shell.yaml"
     shell: "unzip -o {input} -d build/data"
+
+
+# TODO: add a new rule for just continental where the national data is extracted, filtered for the countries of interest, then aggregated into a continental amount
+rule potentials_continental:
+    message: "Unzip potentials for continental resolutions." # change
+    input: "build/data/national/{filename}.csv"
+    output: "build/data/continental/{filename}.csv"
+    conda: "../envs/default.yaml" # what does this do?
+    script: "../scripts/wind-and-solar/aggregate_continental_potentials.py"
 
 
 rule download_capacity_factors_wind_and_solar:
