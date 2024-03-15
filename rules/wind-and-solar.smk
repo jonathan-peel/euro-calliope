@@ -47,13 +47,16 @@ rule data_files_continental:
         and land cover) are constructed by summing the national files for the countries
         considered.
         """
-    input: "build/data/national/{filename}.csv"
+    input: 
+        data_file = "build/data/national/{filename}.csv",
+        locations = "build/data/national/units.csv"
+    params: scope = config["scope"]["spatial"]["countries"]
     output: "build/data/continental/{filename}.csv"
     wildcard_constraints: 
         # implemented because of ambiguity against rule 'dummy_tech_locations_template' when filename='demand/electricity'
         filename = "areas|shared-coast|demand|population|land-cover"
     conda: "../envs/default.yaml"
-    script: "../scripts/wind-and-solar/aggregate_continental_potentials.py"
+    script: "../scripts/wind-and-solar/make_continental_data_files.py"
 
 
 rule download_capacity_factors_wind_and_solar:
