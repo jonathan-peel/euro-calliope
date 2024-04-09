@@ -25,18 +25,19 @@ rule data_files_non_continental:
         """
     input: rules.download_potentials.output[0]
     shadow: "minimal"
-    wildcard_constraints:
-        resolution="regional|national"
+    # wildcard_constraints:
+    #     resolution="regional|national"
     output:
         land_eligibility_km2 = "build/data/{{resolution}}/{scenario}/areas.csv".format(
             scenario=config["parameters"]["wind-and-solar-potential-scenario"]
-        ),
-        shared_coast = "build/data/{resolution}/shared-coast.csv",
-        demand = "build/data/{resolution}/demand.csv",
-        population = "build/data/{resolution}/population.csv",
-        land_cover = "build/data/{resolution}/land-cover.csv"
+        ), # exists for continental
+        shared_coast = "build/data/{resolution}/shared-coast.csv", # doesn't exist for continental
+        demand = "build/data/{resolution}/demand.csv", # doesn't exist for continental
+        population = "build/data/{resolution}/population.csv", # doesn't exist for continental
+        land_cover = "build/data/{resolution}/land-cover.csv" # exists for continental
     conda: "../envs/shell.yaml"
     shell: "unzip -o {input} -d build/data"
+# TODO: ask Tim: why do only land_eligibility_km2 and land_cover exist for continental?
 
 
 # TODO: add a new rule for just continental where the national data is extracted, filtered for the countries of interest, then aggregated into a continental amount
